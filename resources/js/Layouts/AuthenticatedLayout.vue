@@ -32,12 +32,18 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
+                                <NavLink :href="route('cars.index')" :active="route().current('cars.index')" v-if="$page.props.auth.user.role == 'customer'">
+                                    Available Cars
+                                </NavLink>
+                                <NavLink :href="route('cars.index')" :active="route().current('cars.index')" v-if="$page.props.auth.user.role == 'owner'">
+                                    Owned Cars
+                                </NavLink>
                             </div>
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
                             <!-- Settings Dropdown -->
-                            <div class="ml-3 relative">
+                            <div class="ml-3 relative"  v-if="$page.props.auth.user">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
@@ -45,7 +51,7 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                                {{ $page.props.auth.user.name }} ({{ $page.props.auth.user.role }})
 
                                                 <svg
                                                     class="ml-2 -mr-0.5 h-4 w-4"
@@ -70,6 +76,14 @@ const showingNavigationDropdown = ref(false);
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
+                            </div>
+                            <div class="hidden sm:flex sm:items-center sm:ml-6" v-else>
+                                <NavLink :href="route('login')" :active="route().current('login')">
+                                    Log In
+                                </NavLink>
+                                <NavLink :href="route('register')" :active="route().current('register')">
+                                    Register
+                                </NavLink>
                             </div>
                         </div>
 
@@ -115,10 +129,13 @@ const showingNavigationDropdown = ref(false);
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('cars.index')" :active="route().current('cars.index')">
+                            Available Cars
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200">
+                    <div class="pt-4 pb-1 border-t border-gray-200" v-if="$page.props.auth.user">
                         <div class="px-4">
                             <div class="font-medium text-base text-gray-800">
                                 {{ $page.props.auth.user.name }}
@@ -131,6 +148,12 @@ const showingNavigationDropdown = ref(false);
                             <ResponsiveNavLink :href="route('logout')" method="post" as="button">
                                 Log Out
                             </ResponsiveNavLink>
+                        </div>
+                    </div>
+                    <div class="pt-4 pb-1 border-t border-gray-200" v-else>
+                        <div class="mt-3 space-y-1">
+                            <ResponsiveNavLink :href="route('login')"> Login </ResponsiveNavLink>
+                            <ResponsiveNavLink :href="route('register')"> Register </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>

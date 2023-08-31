@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AppController;
+use App\Http\Controllers\CarController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Car;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,9 +29,15 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', [AppController::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [AppController::class,'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::resource('cars', CarController::class)->only(['index','show']);
 Route::middleware('auth')->group(function () {
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class); #User
+    Route::resource('cars', CarController::class)->only(['create','store','update','edit','destroy']); #Car
+    Route::prefix('cars')->group(function() {
+        
+    });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
