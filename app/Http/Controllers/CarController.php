@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AppLibrary;
 use App\Models\Car;
+use App\Models\CarUser;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,6 +19,7 @@ class CarController extends Controller
             return redirect(route('login'));
         }
         $isAdmin = auth()->check() ? auth()->user()->role == 'admin' : false;
+        $canBook = true;
         $cars = [];
 
         switch(auth()->user()->role){
@@ -25,9 +27,12 @@ class CarController extends Controller
                 $cars = Car::orderBy('created_at','desc')->get();
                 break;
             case 'owner':
-                $cars = auth()->user()->cars;
+                $cars = auth()->user()->owned;
                 break;
             default:
+                $canBook  = CarUser::where('user_id',auth()->id())
+                    ->where('status','<>','completed')
+                    ->exists() ? false : true;
                 $cars = Car::where('status','available')->get();
                 break;
         }
@@ -35,7 +40,8 @@ class CarController extends Controller
         return Inertia::render('Cars/Index',[
             'cars' => $cars,
             'brands' => $brands,
-            'isAdmin' => $isAdmin
+            'isAdmin' => $isAdmin,
+            'canBook' => $canBook
         ]);
     }
 
@@ -143,12 +149,43 @@ class CarController extends Controller
     public function book(Request $request){
         if(auth()->check()){
             if(auth()->user()->role == 'customer'){
-
+                $validated = $request->validate([
+                    'car_id' => 'exists:cars,id',
+                    'start_date' => 'required|date|after_or_equal:today',
+                    'end_date' => 'required|date|after:today',
+                ]);
+                $submit_detail = array_merge($request->all(), ['user_id' => auth()->id(),'status' => 'pending_approval']);
+                CarUser::create($submit_detail);
+                Car::find($request->car_id)->update(['status' => 'booked']);
             } else {
                 return redirect(route('dashboard'));
             }
         } else {
             return redirect(route('login'));
         }
+    }
+
+    public function payment(Request $request, CarUser $booking)
+    {
+        $validated = $request->validate([
+            'receipt' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+        
+        //Process recepit
+        $img_url = '';
+        $img_name = 'receipt_'.time().'.'.$request->receipt->extension();
+        $img_url = 'renters/'.'renter_'.$booking->id.'/'.'receipt_'.time().'.'.$request->receipt->extension();
+        $request->receipt->move(public_path('images/booking/'.'request_'.$booking->id), $img_name);
+
+        if($img_url != ''){
+            //Update db.
+            $booking->proof_of_payment = $img_url;
+            $booking->status = 'vehicle_received';
+            $booking->save();
+        } else {
+            return redirect(route('dashboard'))->withErrors(['message' => 'Failed to save receipt, please retry!']);
+        }
+
+        return redirect(route('dashboard'))->with('success','Receipt received, wait for further notice.');
     }
 }

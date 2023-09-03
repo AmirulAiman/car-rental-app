@@ -36,8 +36,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class); #User
     Route::resource('cars', CarController::class)->only(['create','store','update','edit','destroy']); #Car
     Route::prefix('cars')->group(function() {
-        
+        Route::get('rent/{car}', [CarController::class,'rent'])->name('cars.rent');
+        Route::post('booking', [CarController::class,'book'])->name('cars.book');
+        Route::post('payment/{booking}', [CarController::class,'payment'])->name('cars.payment');
     });
+
+    Route::post('/respond/{booking}',[AppController::class,'respond'])->name('app.respond');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
