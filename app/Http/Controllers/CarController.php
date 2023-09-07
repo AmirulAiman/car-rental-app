@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewBookingCustomer;
+use App\Mail\NewBookingOwner;
 use App\Models\AppLibrary;
 use App\Models\Car;
 use App\Models\CarUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class CarController extends Controller
@@ -155,8 +158,11 @@ class CarController extends Controller
                     'end_date' => 'required|date|after:today',
                 ]);
                 $submit_detail = array_merge($request->all(), ['user_id' => auth()->id(),'status' => 'pending_approval']);
-                CarUser::create($submit_detail);
-                Car::find($request->car_id)->update(['status' => 'booked']);
+                $booking = CarUser::create($submit_detail);
+                $car = Car::find($request->car_id);
+                $car->update(['status' => 'booked']);
+                Mail::to(auth()->user())->send(new NewBookingCustomer($booking));
+                Mail::to($car->owner)->send(new NewBookingOwner($booking));
             } else {
                 return redirect(route('dashboard'));
             }

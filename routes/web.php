@@ -30,6 +30,14 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [AppController::class,'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::post('/test-email',[AppController::class,'sendTestEmail'])->middleware(['auth','verified'])->name('app.send-test-email');
+Route::prefix('app-libraries')->group(function(){
+    Route::get('/',[AppController::class,'index'])->middleware(['auth','verified'])->name('app.index');
+    Route::post('/',[AppController::class,'store'])->middleware(['auth','verified'])->name('app.store');
+    Route::get('/{library}',[AppController::class,'show'])->middleware(['auth','verified'])->name('app.show');
+    Route::post('/{library}',[AppController::class,'update'])->middleware(['auth','verified'])->name('app.update');
+    Route::post('/app-libraries/{library}',[AppController::class,'destroy'])->middleware(['auth','verified'])->name('app.destroy');
+});
 
 Route::resource('cars', CarController::class)->only(['index','show']);
 Route::middleware('auth')->group(function () {

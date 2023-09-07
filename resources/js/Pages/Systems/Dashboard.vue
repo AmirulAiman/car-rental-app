@@ -69,7 +69,7 @@ const totalDayBooked = computed(() => {
 
 const updateStatus = (id, car_id,status) => {
     processing.value = true
-    router.post(route('app.respond', id),{
+    axios.post(route('app.respond', id),{
         'id': id,
         'car_id': car_id,
         'status': status
@@ -79,15 +79,28 @@ const updateStatus = (id, car_id,status) => {
         processing.value = false
         window.location.reload
     })
-    .catch(() => {
-        alert('Failed')
+    .catch((err) => {
+        alert('Failed to update')
+        console.log(err)
         processing.value = false
         window.location.reload
-    });
-    processing.value = false
+    })
+    .final(() => {
+        processing.value = false
+    })
 }
 
 const formatText = (text) => text.replace('_',' ');
+
+const sendTestEmail = () => {
+    axios.post(route('app.send-test-email'))
+    .then(res => {
+        alert('Test email send.');
+    })
+    .catch(errors => {
+        console.log(errors)
+    })
+}
 </script>
 
 <template>
@@ -100,8 +113,36 @@ const formatText = (text) => text.replace('_',' ');
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg" v-if="$page.props.auth.user.role == 'admin'">
-                    <div class="p-6 text-gray-900">Admin!</div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6" v-if="$page.props.auth.user.role == 'admin'">
+                    <div class="p-6 text-gray-900">
+                        <div class="flex justify-start">
+                            <button class="px-5 py-2 rounded-md bg-gray-900 text-gray-200" @click="sendTestEmail">Send Test Email</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6" v-if="$page.props.auth.user.role == 'admin'">
+                    <div class="p-6 text-gray-900">
+                        <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
+                            <thead class="bg-gray-100 dark:bg-gray-700">
+                                <tr>
+                                    <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-400">#</th>
+                                    <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-400">Name</th>
+                                    <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-400">Email</th>
+                                    <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-400">Role</th>
+                                    <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-700 uppercase dark:text-gray-400">User Since</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="py-3" v-for="user in data" :key="user.id">
+                                    <td class="text-center text-md">#</td>
+                                    <td class="text-left text-md">{{  user.name }}</td>
+                                    <td class="text-left text-md font-semibold">{{ user.email }}</td>
+                                    <td class="text-center text-md font-semibold capitalize">{{ user.role }}</td>
+                                    <td class="text-right text-md">{{ dayjs(user.created_at).format('DD/MM/YYYY') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="overflow-hidden shadow-sm sm:rounded-lg" v-if="$page.props.auth.user.role == 'owner'">
                     <h1 class="mb-6 font-semibold text-md">Car Booking Request</h1>
@@ -176,7 +217,7 @@ const formatText = (text) => text.replace('_',' ');
                             </table>
                         </div>
                         <div class="w-fill">
-                            <form @submit.prevent="submitPayment" v-if="data.status == 'accepted'">
+                            <form @submit.prevent="submitPayment" v-if="data.status == 'approved'">
                                 <h1>Please Upload Proof of payment to complete boking process</h1>
                                 <div class="w-fill">
                                     <input type="hidden" name="id" v-model="formPayment.id">
