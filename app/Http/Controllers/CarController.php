@@ -11,8 +11,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
+use App\Services\BookingService;
+
 class CarController extends Controller
 {
+    private $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -157,7 +165,7 @@ class CarController extends Controller
                     'start_date' => 'required|date|after_or_equal:today',
                     'end_date' => 'required|date|after:today',
                 ]);
-                $submit_detail = array_merge($request->all(), ['user_id' => auth()->id(),'status' => 'pending_approval']);
+                $submit_detail = array_merge($request->all(), ['user_id' => auth()->id(),'status' => 'pending_owner_approval']);
                 $booking = CarUser::create($submit_detail);
                 $car = Car::find($request->car_id);
                 $car->update(['status' => 'booked']);

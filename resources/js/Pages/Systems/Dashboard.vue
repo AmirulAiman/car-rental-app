@@ -12,7 +12,7 @@ dayjs.extend(relativeTime);
 
 const totalCharge = ref(0);
 const processing = ref(false);
-const { data, history } = defineProps(['data','history']);
+const { data, history, statuses } = defineProps(['data','history','statuses']);
 
 const formPayment = useForm({
     receipt:''
@@ -32,7 +32,6 @@ const submitPayment = () => {
     })
 }
 
-const statusLabel = computed(() => data.status.replace('_',' '));
 const statusClass = computed(() => {
     switch (data.status) {
         case 'approve':
@@ -66,16 +65,22 @@ const totalDayBooked = computed(() => {
     totalCharge.value = data.car.rental_charge * diff
     return diff;
 })
-
-const updateStatus = (id, car_id,status) => {
+const status = computed(() => statuses.find(s => s.value == data.status))
+/**
+ * Update the booking status to the next status
+ * @param {Number} id CarUser id
+ * @param {Number} car_id Car id
+ * @param {String} status current status
+ */
+const updateStatus = (id, car_id, status, approved = false) => {
     processing.value = true
     axios.post(route('app.respond', id),{
-        'id': id,
         'car_id': car_id,
-        'status': status
+        'status': status,
+        'approved': approved
     })
     .then(() => {
-        alert('Respond send.')
+        alert('Respond saved.')
         processing.value = false
         window.location.reload
     })
@@ -85,12 +90,12 @@ const updateStatus = (id, car_id,status) => {
         processing.value = false
         window.location.reload
     })
-    .final(() => {
+    .finally(() => {
         processing.value = false
     })
 }
 
-const formatText = (text) => text.replace('_',' ');
+const formatText = (text) => text.replaceAll('_',' ');
 
 const sendTestEmail = () => {
     axios.post(route('app.send-test-email'))
@@ -171,12 +176,17 @@ const sendTestEmail = () => {
                                     </td>
                                     <td class="capitalize">{{ formatText(rental.status) }}</td>
                                     <td>
-                                        <button class="" v-if="rental.status == 'accepted' || rental.status == 'completed'">View Proof of Payment</button>
+                                        <button class="px-3 py-1 bg-gray-900 text-gray-200 rounded-md hover:bg-gray-200 hover:text-gray-900" v-if="rental.status == 'pending_validation' || rental.status == 'completed'">View Proof of Payment</button>
+                                        <div
+                                            class="fixed hidden inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
+                                            id="my-modal"
+                                        >Modal</div>
                                     </td>
                                     <td>
-                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_approval'" @click="updateStatus(rental.id, rental.car.id, 'approve')">Approve</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_approval'" @click="updateStatus(rental.id, rental.car.id, 'reject')">Reject</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'accepted'" @click="updateStatus(rental.id, rental.car.id, 'vehicle_delivered')">Vehicle Delivered</button>
+                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', true)">Approve</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', false)">Reject</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'waiting_vehicle'" @click="updateStatus(rental.id, rental.car.id, 'waiting_vehicle')">Vehicle Delivered</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_received'" @click="updateStatus(rental.id, rental.car.id, 'vehicle_received')">Return Vehicle</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -212,12 +222,12 @@ const sendTestEmail = () => {
                                 </tr>
                                 <tr>
                                     <td class="font-semibold">Booking Status:</td>
-                                    <td class="text-center font-bold capitalize mx-3 px-5 rounded" :class="statusClass">{{ statusLabel }}</td>
+                                    <td class="text-center font-bold capitalize mx-3 px-5 rounded" :class="status.indicator">{{ formatText(data.status) }}</td>
                                 </tr>
                             </table>
                         </div>
                         <div class="w-fill">
-                            <form @submit.prevent="submitPayment" v-if="data.status == 'approved'">
+                            <form @submit.prevent="submitPayment" v-if="data.status == 'pending_payment_deposit'">
                                 <h1>Please Upload Proof of payment to complete boking process</h1>
                                 <div class="w-fill">
                                     <input type="hidden" name="id" v-model="formPayment.id">
@@ -241,12 +251,12 @@ const sendTestEmail = () => {
                                     </PrimaryButton>
                                 </div>
                             </form>
-                            <div class="flex-col justify-start" v-if="data.status == 'vehicle_delivered'">
+                            <div class="flex-col justify-start" v-if="data.status == 'waiting_vehicle'">
                                 <h1>Please verify if you receved the vehicle</h1>
                                 <PrimaryButton 
                                     class="ml-4" 
-                                    :class="{ 'opacity-25': processing.value }"
-                                    :disabled="processing.value"
+                                    :class="{ 'opacity-25': !processing.value }"
+                                    :disabled="!processing.value"
                                     @click="updateStatus(data.id, data.car.id, 'vehicle_received')"
                                 >
                                     Vehicle Received
@@ -256,18 +266,18 @@ const sendTestEmail = () => {
                                 <h1>Clikc below to confirm the vehicle has been returned</h1>
                                 <PrimaryButton 
                                     class="ml-4" 
-                                    :class="{ 'opacity-25': processing.value }"
-                                    :disabled="processing.value"
+                                    :class="{ 'opacity-25': !processing.value }"
+                                    :disabled="!processing.value"
                                     @click="updateStatus(data.id, data.car.id, 'completed')"
                                 >
                                     Return Vehicle
                                 </PrimaryButton>
                             </div>
-                            <div class="flex-col justify-start" v-if="data.status == 'accepted'">
+                            <div class="flex-col justify-start" v-if="data.status != 'completed'">
                                 <PrimaryButton 
                                     class="ml-4 bg-yellow-900 text-yellow-200" 
-                                    :class="{ 'opacity-25': processing.value }"
-                                    :disabled="processing.value"
+                                    :class="{ 'opacity-25': !processing.value }"
+                                    :disabled="!processing.value"
                                     @click="updateStatus(data.id, data.car.id, 'booking_canceled')"
                                 >
                                     Cancel Booking

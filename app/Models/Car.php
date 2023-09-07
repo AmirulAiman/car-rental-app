@@ -30,7 +30,7 @@ class Car extends Model
     }
 
     public function users() {
-        return $this->belongsToMany(User::class,'car_users','car_id','user_id')
+        return $this->belongsToMany(User::class,'car_user','car_id','user_id')
             ->withPivot(['status','start_date','end_date','return_date','proof_of_payment','other_info']);
     }
 }

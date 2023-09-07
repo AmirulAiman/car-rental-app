@@ -11,12 +11,22 @@ use App\Notifications\TestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Notification;
 
+use App\Services\BookingService;
+
 class AppController extends Controller
 {
+    private $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     public function dashboard()
     {
         if(auth()->check()){
@@ -46,37 +56,29 @@ class AppController extends Controller
         } else {
             return redirect(route('login'));
         }
-
+        $statuses = AppLibrary::where('group','rental_status')->get();
         return Inertia::render('Systems/Dashboard',[
             'data' => $data,
             'cars' => $cars ?? [],
-            'history' => $history ?? []
+            'history' => $history ?? [],
+            'statuses' => $statuses ?? []
         ]);
     }
 
     public function respond(Request $request, CarUser $booking){
-        $validated = $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'status' => 'required',
-        ]);
-        switch($request->status){
-            case 'booking_cancelled'||'completed':
-                $car = Car::find($request->car_id)->update(['status' => 'available']);
-                $user = $car->owner;
-                break;
-            case 'approved':
-                $booking->update(['status' => 'accepted']);
-                $user = $booking->user;
-                break;
-            case 'rejected':
-                Car::find($request->car_id)->update(['status' => 'available']);
-                $booking->update(['status' => 'rejected']);
-                $user = $booking->user;
+        try {
+            $validated = $request->validate([
+                'car_id' => 'required|exists:cars,id',
+                'status' => 'required'
+            ]);
+            $status = $this->bookingService->getNextBookingStatus($request->status, $request->approved);
+            $booking->status = $status->value;
+            $booking->save();
+    
+            return response(['status' => 200, 'msg' => 'Update success'],200);
+        } catch (\Throwable $th) {
+            return response(['status' => 400, 'msg' => $th->getMessage()],400);
         }
-        $booking->status = $request->status;
-        $booking->save();
-
-        return redirect(route('dashboard'));
     }
 
     public function sendTestEmail(Request $request){

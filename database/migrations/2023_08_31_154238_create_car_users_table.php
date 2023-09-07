@@ -13,10 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('car_users', function (Blueprint $table) {
+        Schema::create('car_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class);
-            $table->foreignIdFor(Car::class);
+            $table->foreignIdFor(User::class,'user_id');
+            $table->foreignIdFor(Car::class,'car_id');
             $table->string('start_date');
             $table->string('end_date')->nullable();
             $table->string('return_date')->nullable();
@@ -32,6 +32,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('car_users');
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('car_user');
+        Schema::enableForeignKeyConstraints();
     }
 };

@@ -10,7 +10,8 @@ use App\Models\Car;
 class CarUser extends Model
 {
     use HasFactory;
-
+    protected $table = 'car_user';
+    
     protected $fillable = [
         'user_id',
         'car_id',
