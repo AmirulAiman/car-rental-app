@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Mail\NewBookingCustomer;
 use App\Mail\NewBookingOwner;
 use App\Models\AppLibrary;
+use App\Models\User;
 use App\Models\Car;
 use App\Models\CarUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 use App\Services\BookingService;
 
@@ -66,8 +68,15 @@ class CarController extends Controller
         }
 
         $brands = AppLibrary::where('group','car_brand')->get();
+        $properties = AppLibrary::where('group','car_property')->get();
+        $status = AppLibrary::where('group','car_status')->get();
+        $rental_type = AppLibrary::where('group','rental_type')->get();
+
         return Inertia::render('Cars/Create',[
-            'brands' => $brands
+            'brands' => $brands,
+            'properties' => $properties,
+            'statuses' => $status,
+            'rental_type' => $rental_type,
         ]);
     }
 
@@ -76,32 +85,41 @@ class CarController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required',
-            'plate_number' => 'required',
-            'brand' => 'required',
-            'deposit' => 'required',
-            'rental_charge' => 'required',
-        ]);
-
-        $img_path = '';
-        if ($request->hasFile('image')) {
-            $img_path = $request->file('image')->store('image', 'images/cars');
-        } else {
-            $img_path = 'images/cars/default.jpg';
+        try {
+            $validated = $request->validate([
+                'name' => 'required',
+                'plate_number' => 'required|unique:cars,plate_number',
+                'brand' => 'required',
+                'deposit' => 'required',
+                'rental_charge' => 'required',
+                'img' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            ]);
+    
+            $img_path = '';
+            if ($request->hasFile('img')) {
+                $img_name = 'car_'.Str::lower(Str::replace($request->plate_number,' ','_')).'.'.$request->img->extension();
+                $img_url = 'cars/'.'owner_'.auth()->id().'/'.$img_name;
+                $request->img->move(public_path('images/cars'), $img_name);
+            } else {
+                $img_path = 'images/cars/default.jpg';
+            }
+    
+            $car = new Car([
+                'name' => $request->name,
+                'plate_number' => $request->plate_number,
+                'brand' => $request->brand,
+                'deposit' => $request->deposit,
+                'rental_charge' => $request->rental_charge,
+                'rental_charge_type' => $request->rental_charge_type,
+                'property' => json_encode($request->property),
+                'img_url' => $img_url ?? $img_path,
+            ]);
+            $user = User::find(auth()->id());
+            $user->owned()->save($car);
+            return to_route('cars.index')->with(['msg'=>'Car registered']);
+        } catch (\Throwable $th) {
+            return to_route('cars.create')->with(['msg' => $th->getMessage()]);
         }
-
-        $car = new Car([
-            'name' => $request->name,
-            'plate_number' => $request->plate_number,
-            'brand' => $request->brand,
-            'deposit' => $request->deposit,
-            'rental_charge' => $request->rent_price_amount,
-            'rental_charge_type' => $request->rent_price_amount,
-            'img_url' => $img_path,
-        ]);
-        auth()->user->save($car);
-        return redirect(route('cars.index'));
     }
 
     /**
@@ -121,11 +139,17 @@ class CarController extends Controller
             return redirect(route('login'));
         }
 
+        
         $brands = AppLibrary::where('group','car_brand')->get();
+        $properties = AppLibrary::where('group','car_property')->get();
         $status = AppLibrary::where('group','car_status')->get();
+        $rental_type = AppLibrary::where('group','rental_type')->get();
+
         return Inertia::render('Cars/Update',[
-            'brands' => $brands,
-            'status' => $status,
+             'brands' => $brands,
+            'properties' => $properties,
+            'statuses' => $status,
+            'rental_type' => $rental_type,
             'car' => $car
         ]);
     }

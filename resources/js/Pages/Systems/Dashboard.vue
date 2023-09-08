@@ -32,40 +32,16 @@ const submitPayment = () => {
     })
 }
 
-const statusClass = computed(() => {
-    switch (data.status) {
-        case 'approve':
-            return 'bg-green-500 text-green-900';
-            break;
-        case 'processing_request':
-            return 'bg-yellow-500 text-yellow-900';
-            break;
-        case 'vehicle_received':
-            return 'bg-green-500 text-green-900';
-            break;
-        case 'vehicle_returned':
-            return 'bg-green-500 text-green-900';
-            break;
-        case 'rejected':
-            return 'bg-red-500 text-red-900';
-            break;
-        case 'completed':
-            return 'bg-gray-900 text-gray-200';
-            break;
-        default:
-            return 'bg-orange-500 text-orange-900';
-            break;
-    }
-})
 const totalDayBooked = computed(() => {
     let day1 = dayjs(data.start_date)
     let day2 = dayjs(data.end_date)
     let diff = day2.diff(day1,'day')
-
+    
     totalCharge.value = data.car.rental_charge * diff
     return diff;
 })
-const status = computed(() => statuses.find(s => s.value == data.status))
+const status = computed(() => statuses.find(s => s.value == data.status));
+const formatText = (text) => text.replaceAll('_',' ');
 /**
  * Update the booking status to the next status
  * @param {Number} id CarUser id
@@ -95,7 +71,6 @@ const updateStatus = (id, car_id, status, approved = false) => {
     })
 }
 
-const formatText = (text) => text.replaceAll('_',' ');
 
 const sendTestEmail = () => {
     axios.post(route('app.send-test-email'))

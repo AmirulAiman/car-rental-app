@@ -57,6 +57,9 @@ class DatabaseSeeder extends Seeder
         AppLibrary::create(['group' => 'rental_status', 'label' => 'Booking cancelled', 'value' => 'booking_cancelled','sort_index' => 8, 'indicator' => 'rounded-md bg-red-500 text-red-900']);
         AppLibrary::create(['group' => 'rental_status', 'label' => 'Pending Payment (Final)', 'value' => 'pending_payment_final','sort_index' => 9, 'indicator' => 'rounded-md bg-gray-200 text-gray-900']);
         AppLibrary::create(['group' => 'rental_status', 'label' => 'Rental Complete', 'value' => 'completed','sort_index' => 10, 'indicator' => 'rounded-md bg-green-500 text-green-900']);
+        #Rental Type
+        AppLibrary::create(['group' => 'rental_type', 'label' => 'Daily', 'value' => 'daily','sort_index' => 0]);
+        AppLibrary::create(['group' => 'rental_type', 'label' => 'Hourly', 'value' => 'hourly','sort_index' => 1]);
 
         //Car Property
         AppLibrary::create(['group' => 'car_property', 'label' => 'Automatic', 'value' => 'automatic','sort_index' => 0]);

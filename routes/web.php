@@ -39,7 +39,7 @@ Route::prefix('app-libraries')->group(function(){
     Route::post('/app-libraries/{library}',[AppController::class,'destroy'])->middleware(['auth','verified'])->name('app.destroy');
 });
 
-Route::resource('cars', CarController::class)->only(['index','show']);
+Route::resource('cars', CarController::class)->only(['index']);
 Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class); #User
     Route::resource('cars', CarController::class)->only(['create','store','update','edit','destroy']); #Car
