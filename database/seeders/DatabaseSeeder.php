@@ -58,6 +58,14 @@ class DatabaseSeeder extends Seeder
         AppLibrary::create(['group' => 'rental_status', 'label' => 'Pending Payment (Final)', 'value' => 'pending_payment_final','sort_index' => 9, 'indicator' => 'rounded-md bg-gray-200 text-gray-900']);
         AppLibrary::create(['group' => 'rental_status', 'label' => 'Rental Complete', 'value' => 'completed','sort_index' => 10, 'indicator' => 'rounded-md bg-green-500 text-green-900']);
 
+        //Car Property
+        AppLibrary::create(['group' => 'car_property', 'label' => 'Automatic', 'value' => 'automatic','sort_index' => 0]);
+        AppLibrary::create(['group' => 'car_property', 'label' => 'Manual', 'value' => 'manual','sort_index' => 1]);
+        AppLibrary::create(['group' => 'car_property', 'label' => '5 Seats', 'value' => '5_seats','sort_index' => 2]);
+        AppLibrary::create(['group' => 'car_property', 'label' => '7 Seats', 'value' => '7_seats','sort_index' => 3]);
+        AppLibrary::create(['group' => 'car_property', 'label' => 'Suv', 'value' => 'suv','sort_index' => 4]);
+        AppLibrary::create(['group' => 'car_property', 'label' => 'Mpv', 'value' => 'mpv','sort_index' => 5]);
+
         #Cars
         $car = Car::create(['user_id' => rand(1,10),'name' => 'Proton Exora','plate_number' => 'ABC1234', 'brand' => 'proton', 'status' => 'available','rental_charge' => '20.00','deposit' => '200.0', 'img_url' => 'images/cars/default.jpg']);
         $car->owner()->update(['role' => 'owner']);
