@@ -95,13 +95,13 @@ class CarController extends Controller
                 'img' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
             ]);
     
-            $img_path = '';
+            $img_url = '';
             if ($request->hasFile('img')) {
                 $img_name = 'car_'.Str::lower(Str::replace($request->plate_number,' ','_')).'.'.$request->img->extension();
                 $img_url = 'cars/'.'owner_'.auth()->id().'/'.$img_name;
                 $request->img->move(public_path('images/cars'), $img_name);
             } else {
-                $img_path = 'images/cars/default.jpg';
+                $img_url = 'images/cars/default.jpg';
             }
     
             $car = new Car([
@@ -112,7 +112,7 @@ class CarController extends Controller
                 'rental_charge' => $request->rental_charge,
                 'rental_charge_type' => $request->rental_charge_type,
                 'property' => json_encode($request->property),
-                'img_url' => $img_url ?? $img_path,
+                'img_url' => $img_url,
             ]);
             $user = User::find(auth()->id());
             $user->owned()->save($car);
@@ -139,7 +139,7 @@ class CarController extends Controller
             return redirect(route('login'));
         }
 
-        
+        $car->property = json_decode($car->property);
         $brands = AppLibrary::where('group','car_brand')->get();
         $properties = AppLibrary::where('group','car_property')->get();
         $status = AppLibrary::where('group','car_status')->get();
@@ -159,7 +159,40 @@ class CarController extends Controller
      */
     public function update(Request $request, Car $car)
     {
-        //
+        try {
+            $validated = $request->validate([
+                'name' => 'required',
+                'plate_number' => 'required|unique:cars,plate_number',
+                'brand' => 'required',
+                'deposit' => 'required',
+                'rental_charge' => 'required',
+                'img' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            ]);
+
+            $img_url = '';
+            if ($request->hasFile('img')) {
+                $img_name = 'car_'.Str::lower(Str::replace($request->plate_number,' ','_')).'.'.$request->img->extension();
+                $img_url = 'cars/'.'owner_'.auth()->id().'/'.$img_name;
+                $request->img->move(public_path('images/cars'), $img_name);
+            } else {
+                $img_url = 'images/cars/default.jpg';
+            }
+
+            $car->update([
+                    'name' => $request->name,
+                    'plate_number' => $request->plate_number,
+                    'brand' => $request->brand,
+                    'deposit' => $request->deposit,
+                    'rental_charge' => $request->rental_charge,
+                    'rental_charge_type' => $request->rental_charge_type,
+                    'status' => $request->status,
+                    'property' => json_encode($request->property),
+                    'img_url' => $img_url,
+                ]);
+            return to_route('cars.edit', $car->id)->with(['msg' => 'Update success']);
+        } catch (\Throwable $th) {
+            return to_route('cars.edit', $car->id)->with(['msg' => $th->getMessage()]);
+        }
     }
 
     /**
