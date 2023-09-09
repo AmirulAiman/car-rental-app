@@ -32,7 +32,7 @@ total.value = computed(() => cars.length)
         <template #header>
             <div class="flex justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Cars</h2>
-                <a :href="route('cars.create')" class="px-5 py-2 rounded bg-gray-900 text-gray-200 hover:bg-gray-200 hover:text-gray-900 transition-colors duration-300" v-if="$page.props.auth.user.role == 'owner' ?? false">Register New Car</a>
+                <a :href="route('cars.create')" class="px-5 py-2 rounded bg-gray-900 text-gray-200 hover:bg-gray-200 hover:text-gray-900 transition-colors duration-300" v-if="($page.props.auth.user!= null && $page.props.auth.user.role == 'owner') ?? false">Register New Car</a>
             </div>
         </template>
 
@@ -44,8 +44,8 @@ total.value = computed(() => cars.length)
                         </div>
                         <div>
                             <select 
-                                name="roleFilter" 
-                                id="roleFilter" 
+                                name="filterByBrands" 
+                                id="filterByBrands" 
                                 v-model="filter"
                                 class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                             >
@@ -82,15 +82,15 @@ total.value = computed(() => cars.length)
                             </div>
                         </div>
                         <div class="flex justify-end p-3">
-                            <a :href="route('cars.rent', car.id)" class="rounded px-3 py-1 bg-blue-800 text-blue-500 hover:bg-blue-500 hover:text-blue-800 mr-2" v-if="$page.props.auth.user.role == 'customer' && canBook">
+                            <a :href="route('cars.rent', car.id)" class="rounded px-3 py-1 bg-blue-800 text-blue-500 hover:bg-blue-500 hover:text-blue-800 mr-2" v-if="($page.props.auth.user != null && $page.props.auth.user.role == 'customer') && canBook">
                                 <i class="fa-regular fa-bookmark"></i>
                                 Rent
                             </a>
-                            <a :href="route('cars.edit', car.id)" class="rounded px-3 py-1 bg-orange-900 text-orange-300 hover:bg-orange-300 hover:text-orange-900 mr-2" v-if="$page.props.auth.user.role == 'owner'">
+                            <a :href="route('cars.edit', car.id)" class="rounded px-3 py-1 bg-orange-900 text-orange-300 hover:bg-orange-300 hover:text-orange-900 mr-2" v-if="$page.props.auth.user != null && $page.props.auth.user.role == 'owner'">
                                 <i class="fa-solid fa-pen-nib"></i>
                                 Edit
                             </a>
-                            <a :href="route('cars.destroy', car.id)" class="rounded px-3 py-1 bg-red-500 text-red-200 mr-2 hover:bg-red-500 hover:text-red-800 transition-all duration-300" v-if="$page.props.auth.user.role == 'owner'">
+                            <a :href="route('cars.destroy', car.id)" class="rounded px-3 py-1 bg-red-500 text-red-200 mr-2 hover:bg-red-500 hover:text-red-800 transition-all duration-300" v-if="$page.props.auth.user != null && $page.props.auth.user.role == 'owner'">
                                 <i class="fa-solid fa-trash"></i>
                                 Delete
                             </a>

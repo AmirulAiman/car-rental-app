@@ -29,16 +29,38 @@ const showingNavigationDropdown = ref(false);
 
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                                <NavLink 
+                                    :href="'/'" 
+                                    :active="route().current('/')"
+                                >
+                                    Home
+                                </NavLink>
+                                <NavLink 
+                                    :href="route('dashboard')" 
+                                    :active="route().current('dashboard')"
+                                    v-if="$page.props.auth.user != null"
+                                >
                                     Dashboard
                                 </NavLink>
-                                <NavLink :href="route('app.index')" :active="route().current('app.index')" v-if="$page.props.auth.user.role == 'admin'">
+                                <NavLink 
+                                    :href="route('app.index')" 
+                                    :active="route().current('app.index')" 
+                                    v-if="$page.props.auth.user != null && $page.props.auth.user.role == 'admin'"
+                                >
                                     App Libraries
                                 </NavLink>
-                                <NavLink :href="route('cars.index')" :active="route().current('cars.index')" v-if="$page.props.auth.user.role == 'customer'">
+                                <NavLink 
+                                    :href="route('cars.index')" 
+                                    :active="route().current('cars.index')" 
+                                    v-if="$page.props.auth.user == null || ($page.props.auth.user != null && $page.props.auth.user.role == 'customer')"
+                                >
                                     Available Cars
                                 </NavLink>
-                                <NavLink :href="route('cars.index')" :active="route().current('cars.index')" v-if="$page.props.auth.user.role == 'owner'">
+                                <NavLink 
+                                    :href="route('cars.index')" 
+                                    :active="route().current('cars.index')" 
+                                    v-if="$page.props.auth.user != null && $page.props.auth.user.role == 'owner'"
+                                >
                                     Owned Cars
                                 </NavLink>
                             </div>
@@ -80,11 +102,17 @@ const showingNavigationDropdown = ref(false);
                                     </template>
                                 </Dropdown>
                             </div>
-                            <div class="hidden sm:flex sm:items-center sm:ml-6" v-else>
-                                <NavLink :href="route('login')" :active="route().current('login')">
+                            <div class="ml-3 relative"  v-else>
+                                <NavLink 
+                                    :href="route('login')" 
+                                    :active="route().current('login')"
+                                >
                                     Log In
                                 </NavLink>
-                                <NavLink :href="route('register')" :active="route().current('register')">
+                                <NavLink 
+                                    :href="route('register')" 
+                                    :active="route().current('register')"
+                                >
                                     Register
                                 </NavLink>
                             </div>
@@ -129,10 +157,23 @@ const showingNavigationDropdown = ref(false);
                     class="sm:hidden"
                 >
                     <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                        <ResponsiveNavLink 
+                            :href="route('dashboard')" 
+                            :active="route().current('dashboard')"
+                            v-if="$page.props.auth.user != null"
+                        >
                             Dashboard
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('cars.index')" :active="route().current('cars.index')">
+                        <ResponsiveNavLink 
+                            :href="'/'" 
+                            :active="route().current('/')"
+                        >
+                            Home
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink 
+                            :href="route('cars.index')" 
+                            :active="route().current('cars.index')"
+                        >
                             Available Cars
                         </ResponsiveNavLink>
                     </div>

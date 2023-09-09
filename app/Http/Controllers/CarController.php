@@ -28,26 +28,27 @@ class CarController extends Controller
      */
     public function index()
     {
-        if(!auth()->check()){
-            return redirect(route('login'));
-        }
         $isAdmin = auth()->check() ? auth()->user()->role == 'admin' : false;
         $canBook = true;
         $cars = [];
 
-        switch(auth()->user()->role){
-            case 'admin':
-                $cars = Car::orderBy('created_at','desc')->get();
-                break;
-            case 'owner':
-                $cars = auth()->user()->owned;
-                break;
-            default:
-                $canBook  = CarUser::where('user_id',auth()->id())
-                    ->where('status','<>','completed')
-                    ->exists() ? false : true;
-                $cars = Car::where('status','available')->get();
-                break;
+        if(auth()->check()){
+            switch(auth()->user()->role){
+                case 'admin':
+                    $cars = Car::orderBy('created_at','desc')->get();
+                    break;
+                case 'owner':
+                    $cars = auth()->user()->owned;
+                    break;
+                default:
+                    $canBook  = CarUser::where('user_id',auth()->id())
+                        ->where('status','<>','completed')
+                        ->exists() ? false : true;
+                    $cars = Car::where('status','available')->get();
+                    break;
+            }
+        } else {
+            $cars = Car::orderBy('created_at','desc')->get();
         }
         $brands = AppLibrary::where('group','car_brand')->get();
         return Inertia::render('Cars/Index',[
