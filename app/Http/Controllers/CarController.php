@@ -99,7 +99,7 @@ class CarController extends Controller
             $img_url = '';
             if ($request->hasFile('img')) {
                 $img_name = 'car_'.Str::lower(Str::replace($request->plate_number,' ','_')).'.'.$request->img->extension();
-                $img_url = 'cars/'.'owner_'.auth()->id().'/'.$img_name;
+                $img_url = 'images/cars/'.'owner_'.auth()->id().'/'.$img_name;
                 $request->img->move(public_path('images/cars'), $img_name);
             } else {
                 $img_url = 'images/cars/default.jpg';
