@@ -140,16 +140,16 @@ const sendTestEmail = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="py-3" v-for="rental in data" :key="rental.id">
-                                    <td class="text-center text-md">#</td>
-                                    <td class="text-left text-md font-semibold">{{  rental.user.name }}</td>
-                                    <td class="text-left text-md font-semibold">{{ rental.car.name }}</td>
+                                <tr class="" v-for="rental in data" :key="rental.id">
+                                    <td class="text-center text-md py-5">#</td>
+                                    <td class="text-left text-md font-semibold py-5">{{  rental.user.name }}</td>
+                                    <td class="text-left text-md font-semibold py-5">{{ rental.car.name }}</td>
                                     <td class="">
-                                        <span class="text-md font-semibold">{{ dayjs(rental.start_date).format('DD/MM/YYYY') }}</span> to 
-                                        <span class="text-md font-semibold">{{ dayjs(rental.end_date).format('DD/MM/YYYY') }}</span>
+                                        <span class="text-md font-semibold py-5">{{ dayjs(rental.start_date).format('DD/MM/YYYY') }}</span> to 
+                                        <span class="text-md font-semibold py-5">{{ dayjs(rental.end_date).format('DD/MM/YYYY') }}</span>
                                         ({{ dayjs(rental.end_date).diff(dayjs(rental.start_date),'day') }} Day)
                                     </td>
-                                    <td class="capitalize">{{ formatText(rental.status) }}</td>
+                                    <td class="capitalize py-5">{{ formatText(rental.status) }}</td>
                                     <td>
                                         <button class="px-3 py-1 bg-gray-900 text-gray-200 rounded-md hover:bg-gray-200 hover:text-gray-900" v-if="rental.status == 'pending_validation' || rental.status == 'completed'">View Proof of Payment</button>
                                         <div
@@ -157,9 +157,11 @@ const sendTestEmail = () => {
                                             id="my-modal"
                                         >Modal</div>
                                     </td>
-                                    <td>
+                                    <td class=" py-5">
                                         <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', true)">Approve</button>
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', false)">Reject</button>
+                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, 'pending_validation', true)">Approve</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, 'pending_validation', false)">Reject</button>
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'waiting_vehicle'" @click="updateStatus(rental.id, rental.car.id, 'waiting_vehicle')">Vehicle Delivered</button>
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_received'" @click="updateStatus(rental.id, rental.car.id, 'vehicle_received')">Return Vehicle</button>
                                     </td>
@@ -194,6 +196,10 @@ const sendTestEmail = () => {
                                 <tr>
                                     <td class="font-semibold">Total Charge:</td>
                                     <td>RM {{ totalCharge }}</td>
+                                </tr>
+                                <tr>
+                                   <td class="font-semibold">Plate Number:</td> 
+                                   <td class="capitalize">{{ data.car.plate_number }}</td>
                                 </tr>
                                 <tr>
                                     <td class="font-semibold">Booking Status:</td>

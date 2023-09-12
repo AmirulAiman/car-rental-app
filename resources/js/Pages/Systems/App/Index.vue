@@ -36,6 +36,7 @@ const updateData = () => {
                                 <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-center text-gray-700 uppercase dark:text-gray-400">Label</th>
                                 <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-right text-gray-700 uppercase dark:text-gray-400">Value</th>
                                 <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-center text-gray-700 uppercase dark:text-gray-400">Index</th>
+                                <th scope="col" class="py-3 px-6 text-xs font-medium tracking-wider text-center text-gray-700 uppercase dark:text-gray-400">Indicator</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,6 +52,7 @@ const updateData = () => {
                                     <input type="text" class="hidden" :value="d.value">
                                 </td>
                                 <td class="text-center text-md font-semibold">{{ d.sort_index }}</td>
+                                <td class="text-center text-md font-semibold" :class="d.indicator">{{ d.indicator }}</td>
                             </tr>
                         </tbody>
                     </table>

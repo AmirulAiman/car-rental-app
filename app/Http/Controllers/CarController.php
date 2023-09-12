@@ -252,12 +252,15 @@ class CarController extends Controller
         if($img_url != ''){
             //Update db.
             $booking->proof_of_payment = $img_url;
-            $booking->status = 'vehicle_received';
+            $status = $this->bookingService->getNextBookingStatus('pending_payment_deposit');
+            $booking->status = $status->value;
             $booking->save();
         } else {
-            return redirect(route('dashboard'))->withErrors(['message' => 'Failed to save receipt, please retry!']);
+            return to_route('dashboard');
         }
-
-        return redirect(route('dashboard'))->with('success','Receipt received, wait for further notice.');
+        $car = Car::find($booking->car_id)->first();
+        
+        Inertia::share('respond.message', 'Receipt received. Waiting owner validation');
+        return to_route('dashboard');
     }
 }

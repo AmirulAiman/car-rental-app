@@ -13,7 +13,7 @@ class BookingService
         return Car::where('status','available')->get();
     }
 
-    public function getUser(Car $car){
+    public function getCar(Car $car){
         return $car;
     }
 

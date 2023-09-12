@@ -71,10 +71,10 @@ class AppController extends Controller
             $status = $this->bookingService->getNextBookingStatus($request->status, $request->approved);
             $booking->status = $status->value;
             $booking->save();
-    
-            return response(['status' => 200, 'msg' => 'Update success'],200);
+
+            return to_route('dashboard');
         } catch (\Throwable $th) {
-            return response(['status' => 400, 'msg' => $th->getMessage()],400);
+            return to_route('dashboard');
         }
     }
 
