@@ -21,19 +21,15 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Welcome" />
 
     <AuthenticatedLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Welcome to Car-Rental</h2>
-        </template>
-
-        <div class="py-12">
+        <section class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">Welcome to Car-Rental Page</div>
                 </div>
             </div>
-        </div>
+        </section>
     </AuthenticatedLayout>
 </template>

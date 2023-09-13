@@ -58,13 +58,13 @@ const updateStatus = (id, car_id, status, approved = false) => {
     .then(() => {
         alert('Respond saved.')
         processing.value = false
-        window.location.reload
+        window.location.reload()
     })
     .catch((err) => {
         alert('Failed to update')
         console.log(err)
         processing.value = false
-        window.location.reload
+        window.location.reload()
     })
     .finally(() => {
         processing.value = false
@@ -81,6 +81,10 @@ const sendTestEmail = () => {
         console.log(errors)
     })
 }
+
+const canCancel = computed(() => {
+    return ['pending_owner_approval','pending_payment_deposit','pending_validation'].includes(data.status);
+})
 </script>
 
 <template>
@@ -164,6 +168,7 @@ const sendTestEmail = () => {
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, 'pending_validation', false)">Reject</button>
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'waiting_vehicle'" @click="updateStatus(rental.id, rental.car.id, 'waiting_vehicle')">Vehicle Delivered</button>
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_received'" @click="updateStatus(rental.id, rental.car.id, 'vehicle_received')">Return Vehicle</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_returned'" @click="updateStatus(rental.id, rental.car.id, 'completed')">Vehicle Returned</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -175,7 +180,7 @@ const sendTestEmail = () => {
                     v-if="$page.props.auth.user.role == 'customer'"
                 >
                     <div class="p-6 text-gray-900 flex justify-between" v-if="data != null || data != undefined">
-                        <div class="min-w-3/4">
+                        <div class="min-w-3xl">
                             <table>
                                 <tr>
                                     <td class="font-semibold">Car name:</td>
@@ -203,66 +208,52 @@ const sendTestEmail = () => {
                                 </tr>
                                 <tr>
                                     <td class="font-semibold">Booking Status:</td>
-                                    <td class="text-center font-bold capitalize mx-3 px-5 rounded" :class="status.indicator">{{ formatText(data.status) }}</td>
+                                    <td class="text-center font-bold capitalize mx-3 px-5" :class="status.indicator">{{ status.label }}</td>
                                 </tr>
                             </table>
                         </div>
-                        <div class="w-fill">
-                            <form @submit.prevent="submitPayment" v-if="data.status == 'pending_payment_deposit'">
-                                <h1>Please Upload Proof of payment to complete boking process</h1>
-                                <div class="w-fill">
-                                    <input type="hidden" name="id" v-model="formPayment.id">
-                                    <TextInput 
-                                        id="receipt" 
-                                        type="file" 
-                                        class="mt-1 block w-full" 
-                                        @input="formPayment.receipt = $event.target.files[0]"
-                                        required 
-                                    />
-                                    <InputError class="mt-2" :message="formPayment.errors.receipt" />
-                                </div>
-                                <div class="flex items-center justify-center mt-4">
+                        <div class="relative w-fill">
+                            <div class="absolute flex justify-evenly bottom-0 right-0 px-5 py-2">
+                                <form @submit.prevent="submitPayment" v-if="data.status == 'pending_payment_deposit'">
+                                    <h1>Please Upload Proof of payment to complete boking process</h1>
+                                    <div class="w-fill">
+                                        <input type="hidden" name="id" v-model="formPayment.id">
+                                        <TextInput 
+                                            id="receipt" 
+                                            type="file" 
+                                            class="mt-1 block w-full" 
+                                            @input="formPayment.receipt = $event.target.files[0]"
+                                            required 
+                                        />
+                                        <InputError class="mt-2" :message="formPayment.errors.receipt" />
+                                    </div>
+                                    <div class="flex items-center justify-center mt-4">
 
-                                    <PrimaryButton 
-                                        class="ml-4" 
-                                        :class="{ 'opacity-25': formPayment.processing }"
-                                        :disabled="formPayment.processing"
-                                    >
-                                        Submit
-                                    </PrimaryButton>
-                                </div>
-                            </form>
-                            <div class="flex-col justify-start" v-if="data.status == 'waiting_vehicle'">
-                                <h1>Please verify if you receved the vehicle</h1>
-                                <PrimaryButton 
-                                    class="ml-4" 
-                                    :class="{ 'opacity-25': !processing.value }"
-                                    :disabled="!processing.value"
-                                    @click="updateStatus(data.id, data.car.id, 'vehicle_received')"
+                                        <PrimaryButton 
+                                            class="ml-4" 
+                                            :class="{ 'opacity-25': formPayment.processing }"
+                                            :disabled="formPayment.processing"
+                                        >
+                                            Submit
+                                        </PrimaryButton>
+                                    </div>
+                                </form>
+                                <PrimaryButton
+                                    class="mx-3"
+                                    v-if="data.status == 'waiting_vehicle'"
+                                    @click="updateStatus(data.id, data.car_id, 'waiting_vehicle')"
+                                >Receive Vehicle</PrimaryButton>
+                                <PrimaryButton
+                                    class="mx-3"
+                                    v-if="data.status == 'vehicle_received'"
+                                    @click="updateStatus(data.id, data.car_id, 'vehicle_received')"
                                 >
-                                    Vehicle Received
-                                </PrimaryButton>
-                            </div>
-                            <div class="flex-col justify-start" v-if="data.status == 'vehicle_received'">
-                                <h1>Clikc below to confirm the vehicle has been returned</h1>
+                                Return Vehicle</PrimaryButton>
                                 <PrimaryButton 
-                                    class="ml-4" 
-                                    :class="{ 'opacity-25': !processing.value }"
-                                    :disabled="!processing.value"
-                                    @click="updateStatus(data.id, data.car.id, 'completed')"
-                                >
-                                    Return Vehicle
-                                </PrimaryButton>
-                            </div>
-                            <div class="flex-col justify-start" v-if="data.status != 'completed'">
-                                <PrimaryButton 
-                                    class="ml-4 bg-yellow-900 text-yellow-200" 
-                                    :class="{ 'opacity-25': !processing.value }"
-                                    :disabled="!processing.value"
-                                    @click="updateStatus(data.id, data.car.id, 'booking_canceled')"
-                                >
-                                    Cancel Booking
-                                </PrimaryButton>
+                                    class="bg-orange-900 text-orange-500 hover:bg-orange-500 hover:text-orange-900 transition-colors duration-300" 
+                                    v-if="canCancel"
+                                >Cancel Booking</PrimaryButton>
+                                {{ canCancel }}
                             </div>
                         </div>
                     </div>
@@ -287,7 +278,7 @@ const sendTestEmail = () => {
                                 </thead>
                                 <tbody>
                                     <tr class="py-3" v-for="rental in history" :key="rental.id">
-                                        <td class="text-center text-md">#</td>
+                                        <td class="text-center text-md py-5">#</td>
                                         <td class="text-left text-md font-semibold">{{ rental.car.name }}</td>
                                         <td class="">
                                             <span class="text-md font-semibold">{{ dayjs(rental.start_date).format('DD/MM/YYYY') }}</span> to 

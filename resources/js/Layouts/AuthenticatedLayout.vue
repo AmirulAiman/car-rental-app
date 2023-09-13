@@ -45,30 +45,30 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink 
                                     :href="route('app.index')" 
                                     :active="route().current('app.index')" 
-                                    v-if="$page.props.auth.user != null && $page.props.auth.user.role == 'admin'"
+                                    v-if="$page.props.auth.user?.role == 'admin'"
                                 >
                                     App Libraries
                                 </NavLink>
                                 <NavLink 
                                     :href="route('cars.index')" 
                                     :active="route().current('cars.index')" 
-                                    v-if="$page.props.auth.user == null || ($page.props.auth.user != null && $page.props.auth.user.role == 'customer')"
+                                    v-if="$page.props.auth.user == null || $page.props.auth.user?.role == 'customer'"
                                 >
                                     Available Cars
                                 </NavLink>
                                 <NavLink 
                                     :href="route('cars.index')" 
                                     :active="route().current('cars.index')" 
-                                    v-if="$page.props.auth.user != null && $page.props.auth.user.role == 'owner'"
+                                    v-if="$page.props.auth.user?.role == 'owner'"
                                 >
                                     Owned Cars
                                 </NavLink>
                             </div>
                         </div>
 
-                        <div class="hidden sm:flex sm:items-center sm:ml-6">
+                        <div class="hidden sm:flex sm:items-center sm:ml-6"  v-if="$page.props.auth.user">
                             <!-- Settings Dropdown -->
-                            <div class="ml-3 relative"  v-if="$page.props.auth.user">
+                            <div class="ml-3 relative">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
@@ -102,7 +102,10 @@ const showingNavigationDropdown = ref(false);
                                     </template>
                                 </Dropdown>
                             </div>
-                            <div class="ml-3 relative"  v-else>
+                        </div>
+                        <div class="hidden sm:flex sm:items-center sm:ml-6"  v-else>
+                            <!-- Login & Register -->
+                            <div class="ml-3 relative">
                                 <NavLink 
                                     :href="route('login')" 
                                     :active="route().current('login')"

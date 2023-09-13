@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\AppLibrary;
 use App\Models\Car;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,7 +25,26 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@car-rental.dev',
             'role' => 'admin'
         ]);
-
+        
+        #Generate User(Customer)
+        User::factory(1)->create([
+            'name' => 'Customer',
+            'email' => 'customer@car-rental.dev',
+            'role' => 'customer'
+        ]);
+        
+        #Generate User(Owner)+some cars
+        User::create([
+            'name' => 'Owner',
+            'email' => 'owner@car-rental.dev',
+            'role' => 'owner',
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+        ])
+        ->owned()->saveMany([
+            new Car(['name' => 'Proton Exora', 'plate_number' => 'DBA4682', 'brand' => 'proton', 'status' => 'available', 'rental_charge' => '20.00', 'deposit' => '200.0', 'img_url' => 'images/cars/default.jpg']),
+            new Car(['name' => 'Perodua Myvi', 'plate_number' => 'WKL9559', 'brand' => 'perodua', 'status' => 'available', 'rental_charge' => '25.00', 'deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']),
+        ]);
+        
         #App library
         #User role
         AppLibrary::create(['group' => 'role', 'label' => 'Admin', 'value' => 'admin','sort_index' => 0]);
@@ -72,13 +92,13 @@ class DatabaseSeeder extends Seeder
         #Cars
         $car = Car::create(['user_id' => rand(1,10),'name' => 'Proton Exora','plate_number' => 'ABC1234', 'brand' => 'proton', 'status' => 'available','rental_charge' => '20.00','deposit' => '200.0', 'img_url' => 'images/cars/default.jpg']);
         $car->owner()->update(['role' => 'owner']);
-        $car = Car::create(['user_id' => rand(1,10),'name' => 'Proton Saga','plate_number' => 'ABC135', 'brand' => 'proton', 'status' => 'available','rental_charge' => '25.00','deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']);
+        $car = Car::create(['user_id' => rand(1,10),'name' => 'Proton Saga','plate_number' => 'ABC1355', 'brand' => 'proton', 'status' => 'available','rental_charge' => '25.00','deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']);
         $car->owner()->update(['role' => 'owner']);
-        $car = Car::create(['user_id' => rand(1,10),'name' => 'Perodua Bezza','plate_number' => 'DCA987', 'brand' => 'perodua', 'status' => 'available','rental_charge' => '30.00','deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']);
+        $car = Car::create(['user_id' => rand(1,10),'name' => 'Perodua Bezza','plate_number' => 'DCA9873', 'brand' => 'perodua', 'status' => 'available','rental_charge' => '30.00','deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']);
         $car->owner()->update(['role' => 'owner']);
-        $car = Car::create(['user_id' => rand(1,10),'name' => 'Mazda CX-5','plate_number' => 'DFA468', 'brand' => 'mazda', 'status' => 'available','rental_charge' => '50.00','deposit' => '600.0', 'img_url' => 'images/cars/default.jpg']);
+        $car = Car::create(['user_id' => rand(1,10),'name' => 'Mazda CX-5','plate_number' => 'DFA4686', 'brand' => 'mazda', 'status' => 'available','rental_charge' => '50.00','deposit' => '600.0', 'img_url' => 'images/cars/default.jpg']);
         $car->owner()->update(['role' => 'owner']);
-        $car = Car::create(['user_id' => rand(1,10),'name' => 'Perodua Myvi','plate_number' => 'DFA345', 'brand' => 'perodua', 'status' => 'available','rental_charge' => '25.00','deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']);
+        $car = Car::create(['user_id' => rand(1,10),'name' => 'Perodua Myvi','plate_number' => 'DFA3452', 'brand' => 'perodua', 'status' => 'available','rental_charge' => '25.00','deposit' => '250.0', 'img_url' => 'images/cars/default.jpg']);
         $car->owner()->update(['role' => 'owner']);
     }
 }
