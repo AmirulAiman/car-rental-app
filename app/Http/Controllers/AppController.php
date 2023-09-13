@@ -45,7 +45,7 @@ class AppController extends Controller
                     $history = CarUser::where('user_id',auth()->id())
                             ->with(['user','car'])
                             ->where('status','completed')
-                            ->orWhere('status','booking_canceled')
+                            ->orWhere('status','booking_cancelled')
                             ->orWhere('status','rejected')
                             ->get();
                     break;
@@ -69,6 +69,9 @@ class AppController extends Controller
                 'status' => 'required'
             ]);
             $status = $this->bookingService->getNextBookingStatus($request->status, $request->approved);
+            if($status->value == 'pending_payment_final'){
+                $booking->return_date = date('Y-m-d');
+            }
             $booking->status = $status->value;
             $booking->save();
 

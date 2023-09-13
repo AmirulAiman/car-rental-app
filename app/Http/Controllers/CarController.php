@@ -246,21 +246,27 @@ class CarController extends Controller
         //Process recepit
         $img_url = '';
         $img_name = 'receipt_'.time().'.'.$request->receipt->extension();
-        $img_url = 'renters/'.'renter_'.$booking->id.'/'.'receipt_'.time().'.'.$request->receipt->extension();
-        $request->receipt->move(public_path('images/booking/'.'request_'.$booking->id), $img_name);
+        $img_url = 'booking/'.'booking_'.$booking->id.'/'.'receipt_'.time().'.'.$request->receipt->extension();
+        $request->receipt->move(public_path('images/booking/'.'booking_'.$booking->id), $img_name);
 
         if($img_url != ''){
             //Update db.
-            $booking->proof_of_payment = $img_url;
-            $status = $this->bookingService->getNextBookingStatus('pending_payment_deposit');
-            $booking->status = $status->value;
-            $booking->save();
+            if($booking->status != 'pending_payment_final'){
+                $booking->proof_of_payment = $img_url;
+                $status = $this->bookingService->getNextBookingStatus('pending_payment_deposit');
+                $booking->status = $status->value;
+                $booking->save();
+            } else {
+                $booking->return_proof_of_payment = $img_url;
+                $status = $this->bookingService->getNextBookingStatus('pending_payment_final');
+                $booking->status = $status->value;
+                $booking->save();
+            }
         } else {
             return to_route('dashboard');
         }
-        $car = Car::find($booking->car_id)->first();
+        #$car = Car::find($booking->car_id)->first();
         
-        Inertia::share('respond.message', 'Receipt received. Waiting owner validation');
         return to_route('dashboard');
     }
 }

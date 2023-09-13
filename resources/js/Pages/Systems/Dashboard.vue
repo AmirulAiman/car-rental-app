@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
+import Modal from '@/Components/Modal.vue'
 import { useForm, Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import dayjs from 'dayjs';
@@ -10,6 +11,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
+const viewModal = ref(false);
 const totalCharge = ref(0);
 const processing = ref(false);
 const { data, history, statuses } = defineProps(['data','history','statuses']);
@@ -71,6 +73,12 @@ const updateStatus = (id, car_id, status, approved = false) => {
     })
 }
 
+const openModal = () => {
+    viewModal.value = true
+}
+const closeModal = () => {
+    viewModal.value = false;
+}
 
 const sendTestEmail = () => {
     axios.post(route('app.send-test-email'))
@@ -155,11 +163,11 @@ const canCancel = computed(() => {
                                     </td>
                                     <td class="capitalize py-5">{{ formatText(rental.status) }}</td>
                                     <td>
-                                        <button class="px-3 py-1 bg-gray-900 text-gray-200 rounded-md hover:bg-gray-200 hover:text-gray-900" v-if="rental.status == 'pending_validation' || rental.status == 'completed'">View Proof of Payment</button>
-                                        <div
-                                            class="fixed hidden inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
-                                            id="my-modal"
-                                        >Modal</div>
+                                        <button 
+                                            class="px-3 py-1 bg-gray-900 text-gray-200 rounded-md hover:bg-gray-200 hover:text-gray-900" 
+                                            v-if="rental.status == 'pending_validation' || rental.status == 'completed' || rental.status == 'pending_payment_final'"
+                                            @click="openModal"
+                                        >View Proof of Payment</button>
                                     </td>
                                     <td class=" py-5">
                                         <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', true)">Approve</button>
@@ -179,9 +187,9 @@ const canCancel = computed(() => {
                     class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6" 
                     v-if="$page.props.auth.user.role == 'customer'"
                 >
-                    <div class="p-6 text-gray-900 flex justify-between" v-if="data != null || data != undefined">
-                        <div class="min-w-3xl">
-                            <table>
+                    <div class="w-full p-6 text-gray-900 flex justify-between" v-if="data != null || data != undefined">
+                        <div class="container flex justify-between">
+                            <table class="w-1/2">
                                 <tr>
                                     <td class="font-semibold">Car name:</td>
                                     <td>{{ data.car.name }}</td>
@@ -204,18 +212,16 @@ const canCancel = computed(() => {
                                 </tr>
                                 <tr>
                                    <td class="font-semibold">Plate Number:</td> 
-                                   <td class="capitalize">{{ data.car.plate_number }}</td>
+                                   <td class="capitalize font-bold text-lg">{{ data.car.plate_number }}</td>
                                 </tr>
                                 <tr>
                                     <td class="font-semibold">Booking Status:</td>
                                     <td class="text-center font-bold capitalize mx-3 px-5" :class="status.indicator">{{ status.label }}</td>
                                 </tr>
                             </table>
-                        </div>
-                        <div class="relative w-fill">
-                            <div class="absolute flex justify-evenly bottom-0 right-0 px-5 py-2">
-                                <form @submit.prevent="submitPayment" v-if="data.status == 'pending_payment_deposit'">
-                                    <h1>Please Upload Proof of payment to complete boking process</h1>
+                            <div class="w-1/2">
+                                <form @submit.prevent="submitPayment" v-if="data.status == 'pending_payment_deposit' || data.status == 'pending_payment_final'">
+                                    <h1>Please Upload Proof of payment to complete booking process</h1>
                                     <div class="w-fill">
                                         <input type="hidden" name="id" v-model="formPayment.id">
                                         <TextInput 
@@ -227,8 +233,8 @@ const canCancel = computed(() => {
                                         />
                                         <InputError class="mt-2" :message="formPayment.errors.receipt" />
                                     </div>
-                                    <div class="flex items-center justify-center mt-4">
-
+                                    <div class="flex justify-center mt-4">
+    
                                         <PrimaryButton 
                                             class="ml-4" 
                                             :class="{ 'opacity-25': formPayment.processing }"
@@ -238,22 +244,25 @@ const canCancel = computed(() => {
                                         </PrimaryButton>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                        <div class="relative w-fill">
+                            <div class="absolute flex justify-evenly bottom-0 right-0 px-5 py-2">
                                 <PrimaryButton
                                     class="mx-3"
                                     v-if="data.status == 'waiting_vehicle'"
                                     @click="updateStatus(data.id, data.car_id, 'waiting_vehicle')"
-                                >Receive Vehicle</PrimaryButton>
+                                >Vehicle Received</PrimaryButton>
                                 <PrimaryButton
                                     class="mx-3"
                                     v-if="data.status == 'vehicle_received'"
-                                    @click="updateStatus(data.id, data.car_id, 'vehicle_received')"
+                                    @click="updateStatus(data.id, data.car_id, 'vehicle_returned')"
                                 >
                                 Return Vehicle</PrimaryButton>
                                 <PrimaryButton 
                                     class="bg-orange-900 text-orange-500 hover:bg-orange-500 hover:text-orange-900 transition-colors duration-300" 
                                     v-if="canCancel"
                                 >Cancel Booking</PrimaryButton>
-                                {{ canCancel }}
                             </div>
                         </div>
                     </div>
@@ -277,7 +286,7 @@ const canCancel = computed(() => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="py-3" v-for="rental in history" :key="rental.id">
+                                    <tr class="py-3" v-for="rental in history" :key="rental.id" v-if="history.length > 0">
                                         <td class="text-center text-md py-5">#</td>
                                         <td class="text-left text-md font-semibold">{{ rental.car.name }}</td>
                                         <td class="">
@@ -287,8 +296,24 @@ const canCancel = computed(() => {
                                         </td>
                                         <td class="capitalize">{{ formatText(rental.status) }}</td>
                                         <td>
-                                            <button class="px-3 rounded-md bg-gray-900 text-gray-300 hover:bg-gray-300 hover:text-gray-900 transition-colors duration-300" v-if="rental.status == 'accepted' || rental.status == 'completed'">View Proof of Payment</button>
+                                            <button 
+                                                class="px-3 rounded-md bg-gray-900 text-gray-300 hover:bg-gray-300 hover:text-gray-900 transition-colors duration-300" 
+                                                v-if="rental.status == 'accepted' || rental.status == 'completed'"
+                                                @click="openModal"
+                                            >View Proof of Payment</button>
+                                            
+                                        <Modal
+                                            :show="viewModal"
+                                            @close="closeModal"
+                                        >
+                                            <div class="bg-white rounded-md p-6">
+                                                <img :src="rental.proof_of_payment" alt="Proof of payment">
+                                            </div>
+                                        </Modal>
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5" class="text-center font-bold font-xl py-5">No Booking History Existed</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -296,5 +321,13 @@ const canCancel = computed(() => {
                     </div>
             </div>
         </div>
+        <Modal
+            :show="viewModal"
+            @close="closeModal"
+        >
+            <div class="bg-white rounded-md p-6">
+                <img :src="rental.proof_of_payment" alt="Proof of payment">
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

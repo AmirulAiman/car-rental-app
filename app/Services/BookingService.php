@@ -58,6 +58,12 @@ class BookingService
                 return AppLibrary::where('group','rental_status')
                         ->where('value','pending_payment_final')->first();
                 break;
+            case 'pending_payment_final':
+                if($approved){
+                    return AppLibrary::where('group', 'rental_status')
+                    ->where('value', 'completed')->first();
+                }
+                break;
             default:
                 return AppLibrary::where('group','rental_status')
                     ->where('value','completed')->first();
