@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import CarCard from './Components/CarCard.vue'
+import CarCard from './components/CarCard.vue'
 import TextInput from '@/Components/TextInput.vue';
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';

@@ -118,14 +118,27 @@ class AppController extends Controller
     
     public function store(Request $request){
         try {
-            return response(['message' => 'Item stored'], 200);
+            $validated = $request->validate([
+                'group' => 'required',
+                'label' => 'required',
+                'value' => 'required',
+                'sort_index' => 'numeric'
+            ]);
+            AppLibrary::create($request->except('id'));
+            return to_route('app.index');
         } catch (\Throwable $th) {
-            return response(['message' => 'Failed', 'error' => $th->getMessage()], 400);
+            return to_route('app.index')->with('error', $th->getMessage());
         }
     }
     
     public function update(Request $request, AppLibrary $library){
         try {
+            $validated = $request->validate([
+                'group' => 'required',
+                'label' => 'required',
+                'value' => 'required'
+            ]);
+            $library->update($request->except('id'));
             return response(['message' => 'Item updated'], 200);
         } catch (\Throwable $th) {
             return response(['message' => 'Failed', 'error' => $th->getMessage()], 400);
