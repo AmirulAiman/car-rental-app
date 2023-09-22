@@ -38,6 +38,7 @@ class AppController extends Controller
                     break;
                 case 'owner':
                     $data = CarUser::with(['user','car','car.owner'])
+                        ->orderBy('created_at','desc')
                         ->get();
                     break;
                 default:
@@ -52,6 +53,7 @@ class AppController extends Controller
                             ->where('status','completed')
                             ->orWhere('status','booking_cancelled')
                             ->orWhere('status','booking_rejected')
+                            ->orderBy('created_at','desc')
                             ->get();
                     break;
             }

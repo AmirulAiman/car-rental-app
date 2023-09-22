@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         Route::get('rent/{car}', [CarController::class,'rent'])->name('cars.rent');
         Route::post('booking', [CarController::class,'book'])->name('cars.book');
         Route::post('payment/{booking}', [CarController::class,'payment'])->name('cars.payment');
+        Route::post('book-detail/{book}',[CarController::class,'bookingDetail'])->name('cars.book-detail');
     });
 
     Route::post('/respond/{booking}',[AppController::class,'respond'])->name('app.respond');

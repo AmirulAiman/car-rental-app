@@ -8,9 +8,11 @@ import { useForm, Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import axios from 'axios';
 
 dayjs.extend(relativeTime);
 
+const popImage = ref(null);
 const viewModal = ref(false);
 const totalCharge = ref(0);
 const processing = ref(false);
@@ -71,9 +73,20 @@ const updateStatus = (id, car_id, status, approved = false) => {
     })
 }
 
-const openModal = () => {
-    viewModal.value = true
+const openModal = (id) => {
+    axios.post(route('cars.book-detail',id))
+    .then(res => {
+        popImage.value = res.data.proof_of_payment
+    })
+    .catch(err => {
+        alert('Failed to fetch data')
+        console.log('Error > ', err.data)
+    })
+    .finally(() => {
+        viewModal.value = true
+    })
 }
+
 const closeModal = () => {
     viewModal.value = false;
 }
@@ -153,7 +166,7 @@ const canCancel = computed(() => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="" v-for="rental in data" :key="rental.id" v-if="data,length > 0">
+                                <tr class="" v-for="rental in data" :key="rental.id" v-if="data.length > 0">
                                     <td class="text-center text-md py-5">#</td>
                                     <td class="text-left text-md font-semibold py-5">{{  rental.user.name }}</td>
                                     <td class="text-left text-md font-semibold py-5">{{ rental.car.name }}</td>
@@ -167,7 +180,7 @@ const canCancel = computed(() => {
                                         <button 
                                             class="px-3 py-1 bg-gray-900 text-gray-200 rounded-md hover:bg-gray-200 hover:text-gray-900" 
                                             v-if="rental.status == 'pending_validation' || rental.status == 'completed' || rental.status == 'pending_payment_final'"
-                                            @click="openModal"
+                                            @click="openModal(rental.id)"
                                         >View Proof of Payment</button>
                                     </td>
                                     <td class=" py-5">
@@ -303,17 +316,8 @@ const canCancel = computed(() => {
                                             <button 
                                                 class="px-3 rounded-md bg-gray-900 text-gray-300 hover:bg-gray-300 hover:text-gray-900 transition-colors duration-300" 
                                                 v-if="rental.status == 'accepted' || rental.status == 'completed'"
-                                                @click="openModal"
-                                            >View Proof of Payment</button>
-                                            
-                                        <Modal
-                                            :show="viewModal"
-                                            @close="closeModal"
-                                        >
-                                            <div class="bg-white rounded-md p-6">
-                                                <img :src="rental.proof_of_payment" alt="Proof of payment">
-                                            </div>
-                                        </Modal>
+                                                @click="openModal(rental.id)"
+                                            >View Payment Record</button>
                                         </td>
                                     </tr>
                                     <tr v-else>
@@ -330,7 +334,7 @@ const canCancel = computed(() => {
             @close="closeModal"
         >
             <div class="bg-white rounded-md p-6">
-                <img :src="rental.proof_of_payment" alt="Proof of payment">
+                <img :src="popImage" alt="Proof of payment">
             </div>
         </Modal>
     </AuthenticatedLayout>

@@ -248,7 +248,7 @@ class CarController extends Controller
         //Process recepit
         $img_url = '';
         $img_name = 'receipt_'.time().'.'.$request->receipt->extension();
-        $img_url = 'booking/'.'booking_'.$booking->id.'/'.'receipt_'.time().'.'.$request->receipt->extension();
+        $img_url = '/images/booking/'.'booking_'.$booking->id.'/'.'receipt_'.time().'.'.$request->receipt->extension();
         $request->receipt->move(public_path('images/booking/'.'booking_'.$booking->id), $img_name);
 
         if($img_url != ''){
@@ -270,5 +270,13 @@ class CarController extends Controller
         #$car = Car::find($booking->car_id)->first();
         
         return to_route('dashboard');
+    }
+
+    public function bookingDetail(CarUser $book){
+        try {
+            return response($book,200);
+        } catch (\Throwable $th) {
+            return response($th->getMessage(),400);
+        }
     }
 }
