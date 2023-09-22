@@ -1,6 +1,6 @@
 # Car Rental App
 ## Scope
-<p>Basic car rental app that has the basic flow of booking car from start(Complete Boking) until finish(Return Car)</p>
+<p>Basic car rental app that has the basic flow of booking car from start(Complete Booking) until finish(Return Car)</p>
 
 ## Tech Used
 - Stack
@@ -23,7 +23,7 @@
     - `` php artisan:key generate``
     - `` php artisan migrate --seed``, generate database tables and dummy data.
     - `` npm install && npm run dev``
-6. Update the following var in **.env** to enable email notification, make sure MailPit(or other smpt provder) running to avoid errors. Check [here](https://pen-y-fan.github.io/2023/02/23/how-to-install-mailpit-in-laragon/) on how to add MailPit to Laragon
+6. Update the following var in **.env** to enable email notification, make sure MailPit(or other smpt provider) running to avoid errors. Check [here](https://pen-y-fan.github.io/2023/02/23/how-to-install-mailpit-in-laragon/) on how to add MailPit to Laragon
 ```
 EMAIL_NOTIFICATION = true
 ```
@@ -35,4 +35,4 @@ EMAIL_NOTIFICATION = true
 | Owner| User that register vehicle for rent, process rental request| **owner@car-rental.dev/password**|
 | Admin | View the registered users and the app details (Currently)| **admin@car-rental.dev/password**|
 ## Booking Process Flow
-<img src="public/images/git/README_booking-process.png">
+<img src="public/images/git/README_booking-process.png"/>
