@@ -57,15 +57,13 @@ const updateStatus = (id, car_id, status, approved = false) => {
         'status': status,
         'approved': approved
     })
-    .then(() => {
+    .then((res) => {
         alert('Respond saved.')
-        processing.value = false
         window.location.reload()
     })
     .catch((err) => {
         alert('Failed to update')
         console.log(err)
-        processing.value = false
         window.location.reload()
     })
     .finally(() => {
@@ -170,13 +168,12 @@ const canCancel = computed(() => {
                                         >View Proof of Payment</button>
                                     </td>
                                     <td class=" py-5">
-                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', true)">Approve</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, 'pending_owner_approval', false)">Reject</button>
-                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, 'pending_validation', true)">Approve</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, 'pending_validation', false)">Reject</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'waiting_vehicle'" @click="updateStatus(rental.id, rental.car.id, 'waiting_vehicle')">Vehicle Delivered</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_received'" @click="updateStatus(rental.id, rental.car.id, 'vehicle_received')">Return Vehicle</button>
-                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_returned'" @click="updateStatus(rental.id, rental.car.id, 'completed')">Vehicle Returned</button>
+                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, rental.status, true)">Approve</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_owner_approval'" @click="updateStatus(rental.id, rental.car.id, rental.status, false)">Reject</button>
+                                        <button class="px-3 py-1 rounded-md bg-green-900 text-green-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, rental.status, true)">Approve</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'pending_validation'" @click="updateStatus(rental.id, rental.car.id, rental.status, false)">Reject</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'waiting_vehicle'" @click="updateStatus(rental.id, rental.car.id, rental.status)">Vehicle Delivered</button>
+                                        <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_returned'" @click="updateStatus(rental.id, rental.car.id, rental.status)">Retrieve Vehicle</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -251,16 +248,17 @@ const canCancel = computed(() => {
                                 <PrimaryButton
                                     class="mx-3"
                                     v-if="data.status == 'waiting_vehicle'"
-                                    @click="updateStatus(data.id, data.car_id, 'waiting_vehicle')"
+                                    @click="updateStatus(data.id, data.car_id, data.status)"
                                 >Vehicle Received</PrimaryButton>
                                 <PrimaryButton
                                     class="mx-3"
                                     v-if="data.status == 'vehicle_received'"
-                                    @click="updateStatus(data.id, data.car_id, 'vehicle_returned')"
+                                    @click="updateStatus(data.id, data.car_id, data.status)"
                                 >
                                 Return Vehicle</PrimaryButton>
                                 <PrimaryButton 
                                     class="bg-orange-900 text-orange-500 hover:bg-orange-500 hover:text-orange-900 transition-colors duration-300" 
+                                    @click="updateStatus(data.id, data.car_id, 'booking_cancelled')"
                                     v-if="canCancel"
                                 >Cancel Booking</PrimaryButton>
                             </div>

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\NewBookingCustomer;
-use App\Mail\NewBookingOwner;
+use App\Mail\customers\NewBookingCustomer;
+use App\Mail\Owners\NewBookingOwner;
 use App\Models\AppLibrary;
 use App\Models\User;
 use App\Models\Car;
@@ -227,8 +227,10 @@ class CarController extends Controller
                 $booking = CarUser::create($submit_detail);
                 $car = Car::find($request->car_id);
                 $car->update(['status' => 'booked']);
-                Mail::to(auth()->user())->send(new NewBookingCustomer($booking));
-                Mail::to($car->owner)->send(new NewBookingOwner($booking));
+                if(env('EMAIL_NOTIFICATION', false)){
+                    Mail::to(auth()->user())->send(new NewBookingCustomer($booking));
+                    Mail::to($car->owner)->send(new NewBookingOwner($booking));
+                }
             } else {
                 return redirect(route('dashboard'));
             }
@@ -253,12 +255,12 @@ class CarController extends Controller
             //Update db.
             if($booking->status != 'pending_payment_final'){
                 $booking->proof_of_payment = $img_url;
-                $status = $this->bookingService->getNextBookingStatus('pending_payment_deposit');
+                $status = $this->bookingService->getNextBookingStatus('pending_payment_deposit', null, $booking);
                 $booking->status = $status->value;
                 $booking->save();
             } else {
                 $booking->return_proof_of_payment = $img_url;
-                $status = $this->bookingService->getNextBookingStatus('pending_payment_final');
+                $status = $this->bookingService->getNextBookingStatus('pending_payment_final', null, $booking);
                 $booking->status = $status->value;
                 $booking->save();
             }

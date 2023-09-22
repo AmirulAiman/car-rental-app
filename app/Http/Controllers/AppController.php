@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Customers\BookingStatusCustomer;
+use App\Mail\Owners\BookingStatusOwner;
 use App\Mail\TestMail;
 use App\Models\AppLibrary;
 use App\Models\User;
@@ -12,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 
 use App\Services\BookingService;
 
@@ -41,6 +44,7 @@ class AppController extends Controller
                     $data = CarUser::where('user_id',auth()->id())
                         ->with(['user','car'])
                         ->where('status','<>','completed')
+                        ->where('status','<>','booking_cancelled')
                         ->first();
                     $history = CarUser::where('user_id',auth()->id())
                             ->with(['user','car'])
@@ -68,23 +72,34 @@ class AppController extends Controller
                 'car_id' => 'required|exists:cars,id',
                 'status' => 'required'
             ]);
-            $status = $this->bookingService->getNextBookingStatus($request->status, $request->approved);
+            $status = $this->bookingService->getNextBookingStatus($request->status, $request->approved, $booking);
             if($status->value == 'pending_payment_final'){
                 $booking->return_date = date('Y-m-d');
             }
             $booking->status = $status->value;
             $booking->save();
-
-            return to_route('dashboard');
+            if(env('EMAIL_NOTIFICATION', false)){
+                if($request->approved){
+                    Mail::to($booking->user->email)->send(new BookingStatusCustomer($booking,$request->approved));
+                } else {
+                    Mail::to($booking->user->email)->send(new BookingStatusCustomer($booking));
+                }
+                Mail::to($booking->car->owner->email)->send(new BookingStatusOwner($booking));
+            }
+            return response(['data' => 'success', 200]);
         } catch (\Throwable $th) {
-            return to_route('dashboard');
+            return response(['data' => $th->getMessage(), 500]);
         }
     }
 
     public function sendTestEmail(Request $request){
         try {
             $users = User::where('id','<>',auth()->id())->get();
-            Notification::send($users, new TestNotification());
+            if(env('EMAIL_NOTIFICATION', false)){
+                Notification::send($users, new TestNotification());
+            } else {
+                return response(['message' => 'EMAIL_NOTIFICATION not allowed in .env'], 200);
+            }
             return response(['message' => 'testing...'],200);
         } catch (\Throwable $th) {
             return response($th->getMessage(),400);
