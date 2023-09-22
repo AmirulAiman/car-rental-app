@@ -23,6 +23,10 @@
     - `` php artisan:key generate``
     - `` php artisan migrate --seed``, generate database tables and dummy data.
     - `` npm install && npm run dev``
+6. Update the following var in **.env** to enable email notification, make sure MailPit(or other smpt provder) running to avoid errors. Check [here](https://pen-y-fan.github.io/2023/02/23/how-to-install-mailpit-in-laragon/) on how to add MailPit to Laragon
+```
+EMAIL_NOTIFICATION = true
+```
 
 ## Role
 | Role | Description | Account(Email/Password) |
