@@ -45,12 +45,13 @@ class AppController extends Controller
                         ->with(['user','car'])
                         ->where('status','<>','completed')
                         ->where('status','<>','booking_cancelled')
+                        ->where('status','<>','booking_rejected')
                         ->first();
                     $history = CarUser::where('user_id',auth()->id())
                             ->with(['user','car'])
                             ->where('status','completed')
                             ->orWhere('status','booking_cancelled')
-                            ->orWhere('status','rejected')
+                            ->orWhere('status','booking_rejected')
                             ->get();
                     break;
             }

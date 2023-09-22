@@ -123,12 +123,15 @@ const canCancel = computed(() => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="py-3" v-for="user in data" :key="user.id">
+                                <tr class="py-3" v-for="user in data" :key="user.id" v-if="data.length > 0">
                                     <td class="text-center text-md">#</td>
                                     <td class="text-left text-md">{{  user.name }}</td>
                                     <td class="text-left text-md font-semibold">{{ user.email }}</td>
                                     <td class="text-center text-md font-semibold capitalize">{{ user.role }}</td>
                                     <td class="text-right text-md">{{ dayjs(user.created_at).format('DD/MM/YYYY') }}</td>
+                                </tr>
+                                <tr v-else>
+                                    <td colspan="5" class="text-center font-bold font-xl py-5">No User Registered</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -150,7 +153,7 @@ const canCancel = computed(() => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="" v-for="rental in data" :key="rental.id">
+                                <tr class="" v-for="rental in data" :key="rental.id" v-if="data,length > 0">
                                     <td class="text-center text-md py-5">#</td>
                                     <td class="text-left text-md font-semibold py-5">{{  rental.user.name }}</td>
                                     <td class="text-left text-md font-semibold py-5">{{ rental.car.name }}</td>
@@ -175,6 +178,9 @@ const canCancel = computed(() => {
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'waiting_vehicle'" @click="updateStatus(rental.id, rental.car.id, rental.status)">Vehicle Delivered</button>
                                         <button class="px-3 py-1 rounded-md bg-yellow-900 text-yellow-200 mx-2" v-if="rental.status == 'vehicle_returned'" @click="updateStatus(rental.id, rental.car.id, rental.status)">Retrieve Vehicle</button>
                                     </td>
+                                </tr>
+                                <tr v-else>
+                                    <td colspan="5" class="text-center font-bold font-xl py-5">No Booking Request Existed</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -310,7 +316,7 @@ const canCancel = computed(() => {
                                         </Modal>
                                         </td>
                                     </tr>
-                                    <tr>
+                                    <tr v-else>
                                         <td colspan="5" class="text-center font-bold font-xl py-5">No Booking History Existed</td>
                                     </tr>
                                 </tbody>
